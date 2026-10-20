@@ -1,5 +1,23 @@
+importScripts("/queue-store.js");
+
+const READY_VIBRATE = [400, 150, 400, 150, 600];
+
 function isSafeUrl(url) {
   return typeof url === "string" && /^\/o\/[A-Za-z0-9_-]{32}$/.test(url);
+}
+
+function showReadyNotification({ title, body, url, tag }) {
+  return self.registration.showNotification(title || "Queue", {
+    body: body || "Your food is ready.",
+    data: { url: isSafeUrl(url) ? url : "/" },
+    tag: tag || "food-ready",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    vibrate: READY_VIBRATE,
+    silent: false,
+    renotify: true,
+    requireInteraction: true,
+  });
 }
 
 self.addEventListener("install", (event) => {
@@ -22,22 +40,50 @@ self.addEventListener("push", (event) => {
     data = {};
   }
 
-  const title = typeof data.title === "string" ? data.title : "Queue";
-  const body =
-    typeof data.body === "string" ? data.body : "Your food is ready.";
-  const url = isSafeUrl(data.url) ? data.url : "/";
-  const tag = typeof data.tag === "string" ? data.tag : "food-ready";
-
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      data: { url },
-      tag,
-      vibrate: Array.isArray(data.vibrate) ? data.vibrate : [200, 100, 200],
-      requireInteraction: data.requireInteraction !== false,
+    showReadyNotification({
+      title: typeof data.title === "string" ? data.title : "Queue",
+      body: typeof data.body === "string" ? data.body : "Your food is ready.",
+      url: data.url,
+      tag: typeof data.tag === "string" ? data.tag : "food-ready",
     }),
   );
 });
+
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "order-ready") {
+    event.waitUntil(checkStoredOrderReady());
+  }
+});
+
+async function checkStoredOrderReady() {
+  const orderId = await queueStoreGet("lastOrderId");
+  if (typeof orderId !== "string" || !/^[A-Za-z0-9_-]{32}$/.test(orderId)) {
+    return;
+  }
+
+  const response = await fetch(`/api/o/${orderId}/status`, { cache: "no-store" });
+  if (!response.ok) {
+    return;
+  }
+  const order = await response.json();
+  if (order.status !== "Ready") {
+    return;
+  }
+
+  const already = await queueStoreGet("alertedReadyId");
+  if (already === orderId) {
+    return;
+  }
+
+  await showReadyNotification({
+    title: "Queue",
+    body: `Your food is ready - token ${order.tokenNumber}`,
+    url: `/o/${orderId}`,
+    tag: `order-${orderId}`,
+  });
+  await queueStoreSet("alertedReadyId", orderId);
+}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

@@ -33,7 +33,9 @@ export function foodReadyPayload(tokenNumber, publicId) {
     url: `/o/${publicId}`,
     tag: `order-${publicId}`,
     requireInteraction: true,
-    vibrate: [200, 100, 200],
+    vibrate: [400, 150, 400, 150, 600],
+    silent: false,
+    renotify: true,
   };
 }
 

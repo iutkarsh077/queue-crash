@@ -68,7 +68,16 @@ The live order page also expires a stale order when it loads or polls. The job c
 
 ## Environment
 
-The guest must tap **Notify me** once. After that, a closed app can get a system notification when the owner taps **Ready**. Keep phone alerts on. Do not use silent mode.
+The guest must tap **Notify me** once. That is the web permission for background alerts. A website cannot take Android “run in background” like a native app.
+
+After **Notify me**, Chrome can:
+
+- Send a food-ready push notification while the app is closed (sound and vibrate from the phone notification channel)
+- Run a periodic background check on an installed PWA when Chrome allows it
+
+Keep phone alerts on. Do not use silent mode or Do Not Disturb.
+
+Chrome blocks `navigator.vibrate` until the guest taps the page. The first tap after Ready will vibrate if the beep already played.
 
 The PWA starts at `/`. The last scanned order id is stored in `localStorage` as `queue.lastOrderId`. Opening the installed app sends the guest back to that order.
 

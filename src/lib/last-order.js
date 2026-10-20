@@ -1,4 +1,5 @@
 import { isOpenStatus } from "./order-lifecycle.js";
+import { idbDelete, idbSet } from "./order-idb.js";
 
 export const LAST_ORDER_KEY = "queue.lastOrderId";
 const PUBLIC_ID_PATTERN = /^[A-Za-z0-9_-]{32}$/;
@@ -28,6 +29,7 @@ export function saveLastOrderId(orderId) {
   } catch {
     // Storage can be blocked.
   }
+  idbSet("lastOrderId", orderId).catch(() => {});
 }
 
 export function clearLastOrderId(orderId) {
@@ -42,6 +44,7 @@ export function clearLastOrderId(orderId) {
   } catch {
     // Storage can be blocked.
   }
+  idbDelete("lastOrderId").catch(() => {});
 }
 
 export function syncLastOrderId(orderId, status) {

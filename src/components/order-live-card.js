@@ -7,9 +7,11 @@ import { syncLastOrderId } from "@/lib/last-order";
 import { ORDER_STATUS } from "@/lib/order-status-copy";
 import { savePushSubscription } from "@/lib/push-subscribe";
 import {
+  armVibrateOnUserTap,
   isIosDevice,
   isStandaloneDisplay,
   playReadyAlert,
+  playReadyVibrate,
   supportsWebPush,
 } from "@/lib/push-client";
 
@@ -17,7 +19,7 @@ const FALLBACK_TEXT = "Keep this page open - it will show Ready and beep";
 const IPHONE_TEXT =
   "On iPhone, add this site to your Home Screen. Then open the app and tap Notify me.";
 const NOTIFY_OK_TEXT =
-  "We will notify you when your food is ready. Keep phone alerts on.";
+  "Alerts are on. We will sound and vibrate when food is ready, even if you leave this app.";
 
 const SERVER_PUSH_ENV = {
   pushReady: false,
@@ -53,7 +55,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
   const [saving, setSaving] = useState(false);
   const [notifySaved, setNotifySaved] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const alertedReady = useRef(initial.status === ORDER_STATUS.READY);
+  const alertedReady = useRef(false);
   const pushEnv = useSyncExternalStore(
     subscribePushEnv,
     readClientPushEnv,
@@ -63,8 +65,20 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
   const iosNeedsHomeScreen = pushEnv.iosNeedsHomeScreen;
 
   useEffect(() => {
+    armVibrateOnUserTap();
+  }, []);
+
+  useEffect(() => {
     syncLastOrderId(orderId, order.status);
   }, [orderId, order.status]);
+
+  useEffect(() => {
+    if (order.status !== ORDER_STATUS.READY || alertedReady.current) {
+      return;
+    }
+    alertedReady.current = true;
+    playReadyAlert();
+  }, [order.status]);
 
   useEffect(() => {
     if (!pushReady || iosNeedsHomeScreen || !vapidPublicKey) {
@@ -113,10 +127,6 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
         }
         const data = await response.json();
         setOrder(data);
-        if (data.status === ORDER_STATUS.READY && !alertedReady.current) {
-          alertedReady.current = true;
-          playReadyAlert();
-        }
         if (!data.open) {
           clearInterval(timer);
         }
@@ -161,6 +171,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
       }
 
       await savePushSubscription(orderId, vapidPublicKey);
+      playReadyVibrate();
       setNotifySaved(true);
       setMessage(NOTIFY_OK_TEXT);
     } catch (subscribeError) {

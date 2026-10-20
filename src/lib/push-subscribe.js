@@ -1,3 +1,4 @@
+import { registerBackgroundAlerts } from "@/lib/background-alerts";
 import { urlBase64ToUint8Array } from "@/lib/push-client";
 
 export async function savePushSubscription(orderId, vapidPublicKey) {
@@ -23,5 +24,6 @@ export async function savePushSubscription(orderId, vapidPublicKey) {
   if (!response.ok || !data.saved) {
     throw new Error(data.error || "Subscription failed. Try again.");
   }
+  await registerBackgroundAlerts();
   return true;
 }

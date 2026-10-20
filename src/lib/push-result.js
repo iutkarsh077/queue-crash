@@ -1,6 +1,7 @@
 export function shouldDeleteSubscription(statusCode) {
   return statusCode === 404 || statusCode === 410;
 }
+<<<<<<< HEAD
 
 export function ownerReadyPushMessage(push) {
   const sent = Number(push?.sent) || 0;
@@ -18,3 +19,5 @@ export function ownerReadyPushMessage(push) {
   }
   return "Ready. No guest tapped Notify me, so the closed app will not sound.";
 }
+=======
+>>>>>>> parent of 440b770 (bg)

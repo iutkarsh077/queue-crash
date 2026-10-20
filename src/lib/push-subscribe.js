@@ -3,17 +3,15 @@ import {
   showNotifyTestNotification,
   urlBase64ToUint8Array,
 } from "@/lib/push-client";
-import { registerQueueServiceWorker } from "@/lib/register-sw";
 
 export async function savePushSubscription(
   orderId,
   vapidPublicKey,
   { testNotification = false } = {},
 ) {
-  const registration = await registerQueueServiceWorker();
-  if (!registration) {
-    throw new Error("Subscription failed. Try again.");
-  }
+  const registration = await navigator.serviceWorker.register("/sw.js", {
+    scope: "/",
+  });
   await navigator.serviceWorker.ready;
 
   const subscription = await registration.pushManager.subscribe({

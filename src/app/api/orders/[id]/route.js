@@ -61,7 +61,7 @@ async function markReady(current) {
       status: current.status,
       tokenNumber: current.tokenNumber,
       alreadyReady: true,
-      push: { sent: 0, removed: 0, failed: 0, lastStatusCode: null },
+      push: { sent: 0, removed: 0, failed: 0 },
     });
   }
 
@@ -86,7 +86,7 @@ async function markReady(current) {
         status: latest.status,
         tokenNumber: latest.tokenNumber,
         alreadyReady: true,
-        push: { sent: 0, removed: 0, failed: 0, lastStatusCode: null },
+        push: { sent: 0, removed: 0, failed: 0 },
       });
     }
     return NextResponse.json(
@@ -95,15 +95,15 @@ async function markReady(current) {
     );
   }
 
-  let push = { sent: 0, removed: 0, failed: 0, lastStatusCode: null };
+  let push = { sent: 0, removed: 0, failed: 0 };
   try {
     push = await sendReadyPush(updated);
-  } catch (error) {
+  } catch {
     console.info(
       JSON.stringify({
         event: "push-ready-error",
         publicId: updated.publicId,
-        message: error?.message || "Push delivery failed.",
+        message: "Push delivery failed.",
       }),
     );
   }

@@ -2,18 +2,22 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PrimaryButton } from "@/components/guest-shell";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { syncLastOrderId } from "@/lib/last-order";
 import { ORDER_STATUS } from "@/lib/order-status-copy";
+import { savePushSubscription } from "@/lib/push-subscribe";
 import {
   isIosDevice,
   isStandaloneDisplay,
   playReadyAlert,
   supportsWebPush,
-  urlBase64ToUint8Array,
 } from "@/lib/push-client";
 
 const FALLBACK_TEXT = "Keep this page open - it will show Ready and beep";
 const IPHONE_TEXT =
   "On iPhone, add this site to your Home Screen. Then open the app and tap Notify me.";
+const NOTIFY_OK_TEXT =
+  "We will notify you when your food is ready. Keep phone alerts on.";
 
 const SERVER_PUSH_ENV = {
   pushReady: false,
@@ -57,6 +61,37 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
   );
   const pushReady = pushEnv.pushReady;
   const iosNeedsHomeScreen = pushEnv.iosNeedsHomeScreen;
+
+  useEffect(() => {
+    syncLastOrderId(orderId, order.status);
+  }, [orderId, order.status]);
+
+  useEffect(() => {
+    if (!pushReady || iosNeedsHomeScreen || !vapidPublicKey) {
+      return undefined;
+    }
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+      return undefined;
+    }
+    if (!order.open || order.status !== ORDER_STATUS.PREPARING) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    savePushSubscription(orderId, vapidPublicKey)
+      .then(() => {
+        if (!cancelled) {
+          setNotifySaved(true);
+          setMessage(NOTIFY_OK_TEXT);
+        }
+      })
+      .catch(() => {
+        // Guest can tap Notify me.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [iosNeedsHomeScreen, order.open, order.status, orderId, pushReady, vapidPublicKey]);
 
   useEffect(() => {
     if (!order.open) {
@@ -125,34 +160,11 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
         return;
       }
 
-      const registration = await navigator.serviceWorker.register("/sw.js", {
-        scope: "/",
-      });
-      await navigator.serviceWorker.ready;
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      });
-      const json = subscription.toJSON();
-      const response = await fetch(`/api/o/${orderId}/subscribe`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: json.endpoint,
-          keys: json.keys,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok || !data.saved) {
-        setError(data.error || "Subscription failed. Try again.");
-        setNotifySaved(false);
-        return;
-      }
+      await savePushSubscription(orderId, vapidPublicKey);
       setNotifySaved(true);
-      setMessage("We will notify you when your food is ready.");
-    } catch {
-      setError("Subscription failed. Try again.");
+      setMessage(NOTIFY_OK_TEXT);
+    } catch (subscribeError) {
+      setError(subscribeError.message || "Subscription failed. Try again.");
       setNotifySaved(false);
     } finally {
       setSaving(false);
@@ -175,6 +187,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
 
   return (
     <div>
+      <ServiceWorkerRegister />
       {order.label ? (
         <p className="text-base leading-6 text-ink-soft">{order.label}</p>
       ) : null}

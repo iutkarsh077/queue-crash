@@ -68,14 +68,23 @@ The live order page also expires a stale order when it loads or polls. The job c
 
 ## Environment
 
+The guest must tap **Notify me** once. After that, a closed app can get a system notification when the owner taps **Ready**. Keep phone alerts on. Do not use silent mode.
+
+The PWA starts at `/`. The last scanned order id is stored in `localStorage` as `queue.lastOrderId`. Opening the installed app sends the guest back to that order.
+
+Guests must scan a QR on the same host as the installed app. For production use:
+
+`APP_URL=https://queue-crash.vercel.app`
+
 Set these values in local `.env` and in Vercel:
 
 | Name | Where | Use |
 | --- | --- | --- |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Client and server | Push subscribe |
 | `VAPID_PRIVATE_KEY` | Server only | Push send |
-| `VAPID_SUBJECT` | Server only | `mailto:` or `https://` contact |
+| `VAPID_SUBJECT` | Server only | `mailto:` or `https://queue-crash.vercel.app` |
 | `CRON_SECRET` | Server only | Cron job auth |
+| `APP_URL` | Server only | Public origin for QR codes |
 
 Make keys with:
 
@@ -106,3 +115,7 @@ This matches the Vercel Hobby limit of one cron run per day. The live page still
 - `src/app/api/cron/expire-orders/route.js`
 - `src/components/order-live-card.js`
 - `src/components/owner-order-list.js`
+- `src/lib/last-order.js`
+- `src/components/home-boot.js`
+- `public/icon-192.png`
+- `public/icon-512.png`

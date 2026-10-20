@@ -24,4 +24,4 @@ Read the data flow in [spec.md](spec.md).
 7. [Wait-queue UI](wait-queue-ui.md)
 8. [Food-ready web push](web-push.md)
 
-The home page at `/` is the default Next.js start page. It is not a product feature.
+The home page at `/` opens the last scanned order, or tells the guest to scan the QR code.

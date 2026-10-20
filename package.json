@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/order-lifecycle.test.js tests/vapid.test.js tests/subscription.test.js tests/rate-limit.test.js tests/push-result.test.js tests/ids.test.js"
+    "test": "node --test tests/order-lifecycle.test.js tests/vapid.test.js tests/subscription.test.js tests/rate-limit.test.js tests/push-result.test.js tests/ids.test.js tests/last-order.test.js"
   },
   "dependencies": {
     "mongoose": "^9.11.2",

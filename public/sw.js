@@ -2,6 +2,18 @@ function isSafeUrl(url) {
   return typeof url === "string" && /^\/o\/[A-Za-z0-9_-]{32}$/.test(url);
 }
 
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener("fetch", (event) => {
+  event.respondWith(fetch(event.request));
+});
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -21,7 +33,8 @@ self.addEventListener("push", (event) => {
       body,
       data: { url },
       tag,
-      vibrate: [200, 100, 200],
+      vibrate: Array.isArray(data.vibrate) ? data.vibrate : [200, 100, 200],
+      requireInteraction: data.requireInteraction !== false,
     }),
   );
 });

@@ -227,6 +227,8 @@ This origin goes only into `orderUrl` and the QR code. Pages do not store it.
 
 A second Ready request does not send push. HTTP 404 or 410 from the push service deletes that subscription.
 
+The Ready response includes `{ push: { sent, removed, failed } }`. The dashboard shows that result so the owner can see if a closed-app alert left the server.
+
 After **Notify me**, the guest page shows a test system notification. The guest page does not play the in-page beep when it opens on an order that is already Ready.
 
 ## 10. What does not flow yet

@@ -17,8 +17,26 @@ export async function sendReadyPush(order) {
   let sent = 0;
   let removed = 0;
   let failed = 0;
+  let lastStatusCode = null;
   const payload = JSON.stringify(
     foodReadyPayload(order.tokenNumber, order.publicId),
+  );
+  const options = {
+    ...READY_PUSH_OPTIONS,
+    contentEncoding: "aes128gcm",
+    vapidDetails: {
+      subject: vapid.subject,
+      publicKey: vapid.publicKey,
+      privateKey: vapid.privateKey,
+    },
+  };
+
+  console.info(
+    JSON.stringify({
+      event: "push-ready-start",
+      publicId: order.publicId,
+      subscriptionCount: subscriptions.length,
+    }),
   );
 
   for (const subscription of subscriptions) {
@@ -32,11 +50,19 @@ export async function sendReadyPush(order) {
           },
         },
         payload,
-        READY_PUSH_OPTIONS,
+        options,
       );
       sent += 1;
     } catch (error) {
       const statusCode = error?.statusCode;
+      lastStatusCode = statusCode ?? null;
+      console.info(
+        JSON.stringify({
+          event: "push-ready-item",
+          publicId: order.publicId,
+          statusCode: lastStatusCode,
+        }),
+      );
       if (shouldDeleteSubscription(statusCode)) {
         await PushSubscription.deleteOne({ _id: subscription._id });
         removed += 1;
@@ -53,10 +79,11 @@ export async function sendReadyPush(order) {
       sent,
       removed,
       failed,
+      lastStatusCode,
     }),
   );
 
-  return { sent, removed, failed };
+  return { sent, removed, failed, lastStatusCode };
 }
 
 export async function deleteOrderSubscriptions(orderId) {

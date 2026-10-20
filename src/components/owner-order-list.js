@@ -3,18 +3,24 @@
 import { useState } from "react";
 import { PrimaryButton, SecondaryButton } from "@/components/guest-shell";
 import { patchOrderStatus } from "@/lib/owner-order-api";
+import { ownerReadyPushMessage } from "@/lib/push-result";
 import { ORDER_STATUS } from "@/lib/order-status-copy";
 
 export function OwnerOrderList({ orders, onStatus }) {
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState("");
 
   async function updateStatus(id, status) {
     setError("");
+    setNotice("");
     setBusyId(id);
     try {
       const data = await patchOrderStatus(id, status);
       onStatus?.(id, data.status);
+      if (status === ORDER_STATUS.READY) {
+        setNotice(ownerReadyPushMessage(data.push));
+      }
     } catch (updateError) {
       setError(updateError.message);
     } finally {
@@ -35,6 +41,14 @@ export function OwnerOrderList({ orders, onStatus }) {
           className="mt-4 rounded-[20px] border border-ink bg-paper px-4 py-3 text-base leading-6 text-ink"
         >
           {error}
+        </p>
+      ) : null}
+      {notice ? (
+        <p
+          role="status"
+          className="mt-4 rounded-[20px] border border-ink bg-green-wash px-4 py-3 text-base leading-6 text-ink"
+        >
+          {notice}
         </p>
       ) : null}
       <ul className="mt-4 flex flex-col gap-3">

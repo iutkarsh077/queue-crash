@@ -60,6 +60,8 @@ Polling stops when the order is **Picked up**, **Expired**, or the page is close
 
 If the owner taps **Ready** again, the server does not send a second notification.
 
+The dashboard then shows if the phone alert was sent, failed, or if no guest tapped **Notify me**. Look in Vercel Function Logs for `push-ready` (`sent`, `failed`, `subscriptionCount`). A `POST /o/...` with `_rsc` is the guest opening the page. That is not a subscribe call. Subscribe is `POST /api/o/{orderId}/subscribe`.
+
 A push failure does not undo **Ready**.
 
 The owner taps **Picked up** to close the order. The server deletes all subscriptions for that order.

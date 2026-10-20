@@ -1,4 +1,4 @@
-export const SERVICE_WORKER_URL = "/sw.js?v=ready-sound-3";
+export const SERVICE_WORKER_URL = "/sw.js?v=ready-sound-4";
 
 export function registerQueueServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {

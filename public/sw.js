@@ -1,6 +1,6 @@
 importScripts("/queue-store.js");
 
-const SW_VERSION = "ready-sound-3";
+const SW_VERSION = "ready-sound-4";
 
 function isSafeUrl(url) {
   return typeof url === "string" && /^\/o\/[A-Za-z0-9_-]{32}$/.test(url);
@@ -35,6 +35,16 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(fetch(event.request));
 });
 
+async function askOpenPagesToPlayReadySound() {
+  const clients = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  for (const client of clients) {
+    client.postMessage({ type: "play-ready-sound" });
+  }
+}
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -44,12 +54,15 @@ self.addEventListener("push", (event) => {
   }
 
   event.waitUntil(
-    showReadyNotification({
-      title: typeof data.title === "string" ? data.title : "Queue",
-      body: typeof data.body === "string" ? data.body : "Your food is ready.",
-      url: data.url,
-      tag: typeof data.tag === "string" ? data.tag : "food-ready",
-    }),
+    Promise.all([
+      askOpenPagesToPlayReadySound(),
+      showReadyNotification({
+        title: typeof data.title === "string" ? data.title : "Queue",
+        body: typeof data.body === "string" ? data.body : "Your food is ready.",
+        url: data.url,
+        tag: typeof data.tag === "string" ? data.tag : "food-ready",
+      }),
+    ]),
   );
 });
 

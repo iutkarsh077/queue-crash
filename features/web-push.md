@@ -28,7 +28,9 @@ After **Notify me**, the service worker shows a test system notification: **Aler
 
 If the guest does not hear that test, the Chrome or Queue notification channel is muted. The page tells the guest to open **Settings**, then **Apps**, then **Chrome** or **Queue**, then **Notifications**, and turn sound on.
 
-The page does not play the in-page beep for that test.
+The page also plays `/order_ready_sound.mp3` after **Notify me**, so the guest can hear the in-page Ready clip.
+
+The page does not play the in-page clip for a later visit that opens an order that is already Ready.
 
 ## Live status fallback
 
@@ -38,9 +40,9 @@ If push is not available, or the guest denies permission, the page shows:
 
 **Keep this page open - it will show Ready and beep**
 
-When status changes from **Preparing** to **Ready** on an open page, the page asks the service worker to show the same system notification as a closed-app push. The page plays the in-page beep only if that system notification cannot show and the page is visible.
+When status changes from **Preparing** to **Ready** on an open page, the page asks the service worker to show the same system notification as a closed-app push. The page plays `/order_ready_sound.mp3` if that system notification cannot show and the page is visible. If a push arrives while the order page is still open, the service worker also asks that page to play the same clip.
 
-The page does not play the in-page beep when the guest opens an order that is already **Ready**. Closed-app sound comes from the phone notification, not from Web Audio.
+The page does not play the in-page clip when the guest opens an order that is already **Ready**. A fully closed app cannot play that MP3. Closed-app sound comes from the phone notification channel.
 
 On iPhone, web push works only after the guest adds the site to the Home Screen and opens that app. The page says:
 

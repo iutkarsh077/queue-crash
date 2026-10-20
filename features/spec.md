@@ -227,7 +227,7 @@ This origin goes only into `orderUrl` and the QR code. Pages do not store it.
 
 A second Ready request does not send push. HTTP 404 or 410 from the push service deletes that subscription.
 
-After **Notify me**, the guest page shows a test system notification. The guest page does not play the in-page beep when it opens on an order that is already Ready.
+After **Notify me**, the guest page shows a test system notification and plays `/order_ready_sound.mp3`. The guest page does not play that clip when it opens on an order that is already Ready.
 
 ## 10. What does not flow yet
 

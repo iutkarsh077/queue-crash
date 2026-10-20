@@ -1,10 +1,11 @@
 import {
   foodReadyNotificationOptions,
+  READY_SOUND_URL,
   READY_VIBRATE_PATTERN,
   shouldPlayReadyWebAudio,
 } from "./order-lifecycle.js";
 
-export { READY_VIBRATE_PATTERN };
+export { READY_SOUND_URL, READY_VIBRATE_PATTERN };
 
 export function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -48,6 +49,9 @@ export function supportsWebPush() {
 
 let vibrateArmed = false;
 let pendingReadyVibrate = false;
+let readySoundListenerBound = false;
+let readySoundUnlockAttempted = false;
+let readyAudio = null;
 
 function tryVibrate(pattern = READY_VIBRATE_PATTERN) {
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") {
@@ -60,14 +64,102 @@ function tryVibrate(pattern = READY_VIBRATE_PATTERN) {
   }
 }
 
+function getReadyAudio() {
+  if (typeof Audio === "undefined") {
+    return null;
+  }
+  if (!readyAudio) {
+    readyAudio = new Audio(READY_SOUND_URL);
+    readyAudio.preload = "auto";
+  }
+  return readyAudio;
+}
+
+function unlockReadyAudio() {
+  if (readySoundUnlockAttempted) {
+    return;
+  }
+  readySoundUnlockAttempted = true;
+  const audio = getReadyAudio();
+  if (!audio) {
+    return;
+  }
+  audio.muted = true;
+  const play = audio.play();
+  if (!play || typeof play.then !== "function") {
+    audio.muted = false;
+    return;
+  }
+  play
+    .then(() => {
+      if (audio.muted) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = false;
+      }
+    })
+    .catch(() => {
+      audio.muted = false;
+    });
+}
+
+function playReadySoundFile() {
+  const audio = getReadyAudio();
+  if (!audio) {
+    return false;
+  }
+  try {
+    audio.muted = false;
+    audio.currentTime = 0;
+    const play = audio.play();
+    if (play && typeof play.catch === "function") {
+      play.catch(() => {});
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function playReadyToneFallback() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) {
+      return;
+    }
+    const context = new AudioCtx();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+    gain.gain.setValueAtTime(0.12, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.35);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.35);
+  } catch {
+    // Sound is optional.
+  }
+}
+
 export function armVibrateOnUserTap() {
   if (typeof window === "undefined" || vibrateArmed) {
     return;
   }
   vibrateArmed = true;
+  if ("serviceWorker" in navigator && !readySoundListenerBound) {
+    readySoundListenerBound = true;
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data?.type === "play-ready-sound") {
+        playReadyAlert();
+      }
+    });
+  }
   window.addEventListener(
     "pointerdown",
     () => {
+      unlockReadyAudio();
       if (pendingReadyVibrate) {
         pendingReadyVibrate = false;
         tryVibrate();
@@ -87,25 +179,8 @@ export function playReadyVibrate() {
 
 export function playReadyAlert() {
   playReadyVibrate();
-
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) {
-      return;
-    }
-    const context = new AudioCtx();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.value = 880;
-    gain.gain.setValueAtTime(0.12, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.35);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.35);
-  } catch {
-    // Sound is optional.
+  if (!playReadySoundFile()) {
+    playReadyToneFallback();
   }
 }
 

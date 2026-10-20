@@ -12,7 +12,7 @@ import {
   isIosDevice,
   isStandaloneDisplay,
   notifyFoodReady,
-  playReadyVibrate,
+  playReadyAlert,
   supportsWebPush,
 } from "@/lib/push-client";
 
@@ -187,7 +187,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
       await savePushSubscription(orderId, vapidPublicKey, {
         testNotification: true,
       });
-      playReadyVibrate();
+      playReadyAlert();
       setNotifySaved(true);
       setMessage(NOTIFY_OK_TEXT);
     } catch (subscribeError) {

@@ -27,6 +27,7 @@ export function foodReadyText(tokenNumber) {
 }
 
 export const READY_VIBRATE_PATTERN = [400, 150, 400, 150, 600];
+export const READY_SOUND_URL = "/order_ready_sound.mp3";
 
 export function foodReadyNotificationOptions({
   body,

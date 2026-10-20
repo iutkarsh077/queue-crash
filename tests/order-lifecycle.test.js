@@ -6,6 +6,7 @@ import {
   foodReadyNotificationOptions,
   foodReadyPayload,
   foodReadyText,
+  READY_SOUND_URL,
   READY_VIBRATE_PATTERN,
   isOpenStatus,
   isPastExpiry,
@@ -53,6 +54,7 @@ describe("order lifecycle", () => {
     });
     assert.equal(options.silent, false);
     assert.equal(options.renotify, true);
+    assert.equal(READY_SOUND_URL, "/order_ready_sound.mp3");
     assert.equal(options.vibrate, undefined);
     assert.equal(isSafeNotificationUrl(payload.url), true);
     assert.equal(isSafeNotificationUrl("/o/not-valid"), false);

@@ -155,7 +155,7 @@ export async function showNotifyTestNotification(orderId) {
     title: "Queue",
     body: "Alerts are on. You will hear this when food is ready.",
     url: `/o/${orderId}`,
-    tag: "notify-test",
+    tag: `notify-test-${Date.now()}`,
     requireInteraction: false,
   });
 }

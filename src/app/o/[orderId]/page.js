@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { OrderLiveCard } from "@/components/order-live-card";
 import { GuestShell } from "@/components/guest-shell";
@@ -29,6 +30,7 @@ export default function CustomerOrderPage({ params }) {
 }
 
 async function OrderContent({ params }) {
+  await connection();
   const { orderId } = await params;
   if (!isValidPublicOrderId(orderId)) {
     notFound();

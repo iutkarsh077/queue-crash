@@ -1,19 +1,19 @@
 importScripts("/queue-store.js");
 
-const READY_VIBRATE = [400, 150, 400, 150, 600];
+const SW_VERSION = "ready-sound-3";
 
 function isSafeUrl(url) {
   return typeof url === "string" && /^\/o\/[A-Za-z0-9_-]{32}$/.test(url);
 }
 
 function showReadyNotification({ title, body, url, tag }) {
+  const baseTag = typeof tag === "string" && tag ? tag : "food-ready";
   return self.registration.showNotification(title || "Queue", {
     body: body || "Your food is ready.",
-    data: { url: isSafeUrl(url) ? url : "/" },
-    tag: tag || "food-ready",
+    data: { url: isSafeUrl(url) ? url : "/", version: SW_VERSION },
+    tag: `${baseTag}-${Date.now()}`,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    vibrate: READY_VIBRATE,
     silent: false,
     renotify: true,
     requireInteraction: true,

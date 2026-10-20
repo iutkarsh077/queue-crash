@@ -52,7 +52,8 @@ describe("order lifecycle", () => {
       tag: payload.tag,
     });
     assert.equal(options.silent, false);
-    assert.deepEqual(options.vibrate, READY_VIBRATE_PATTERN);
+    assert.equal(options.renotify, true);
+    assert.equal(options.vibrate, undefined);
     assert.equal(isSafeNotificationUrl(payload.url), true);
     assert.equal(isSafeNotificationUrl("/o/not-valid"), false);
     assert.equal(isSafeNotificationUrl("https://evil.example/o/aaaa"), false);

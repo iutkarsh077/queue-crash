@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { navigation } from "next/cache";
+import { connection } from "next/server";
 import { GuestShell, PrimaryLink, SecondaryLink } from "@/components/guest-shell";
 import { OwnerWorkspace } from "@/components/owner-workspace";
 import { getSessionUser } from "@/lib/auth";
@@ -28,6 +29,7 @@ export default function DashboardPage() {
 }
 
 async function DashboardContent() {
+  await connection();
   await navigation();
   const user = await getSessionUser();
 

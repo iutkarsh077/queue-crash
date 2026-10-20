@@ -1,8 +1,14 @@
+export const SERVICE_WORKER_URL = "/sw.js?v=ready-sound-3";
+
 export function registerQueueServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return Promise.resolve(null);
   }
   return navigator.serviceWorker
-    .register("/sw.js", { scope: "/", updateViaCache: "none" })
+    .register(SERVICE_WORKER_URL, { scope: "/", updateViaCache: "none" })
+    .then((registration) => {
+      registration.update().catch(() => {});
+      return registration;
+    })
     .catch(() => null);
 }

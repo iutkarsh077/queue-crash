@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PrimaryButton, SecondaryButton } from "@/components/guest-shell";
 import { patchOrderStatus } from "@/lib/owner-order-api";
+import { ownerReadyPushMessage } from "@/lib/push-result";
 import { ORDER_STATUS } from "@/lib/order-status-copy";
 
 export function CreateOrderPanel({ order, onCreated, onStatus }) {
@@ -10,11 +11,13 @@ export function CreateOrderPanel({ order, onCreated, onStatus }) {
   const [loading, setLoading] = useState(false);
   const [readyBusy, setReadyBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   async function onSubmit(event) {
     event.preventDefault();
     setLoading(true);
     setError("");
+    setNotice("");
 
     try {
       const response = await fetch("/api/orders", {
@@ -46,9 +49,13 @@ export function CreateOrderPanel({ order, onCreated, onStatus }) {
     }
     setReadyBusy(true);
     setError("");
+    setNotice("");
     try {
       const data = await patchOrderStatus(order.id, status);
       onStatus?.(order.id, data.status);
+      if (status === ORDER_STATUS.READY) {
+        setNotice(ownerReadyPushMessage(data.push));
+      }
     } catch (updateError) {
       setError(updateError.message);
     } finally {
@@ -91,6 +98,14 @@ export function CreateOrderPanel({ order, onCreated, onStatus }) {
           className="mt-4 rounded-[20px] border border-ink bg-paper px-4 py-3 text-base leading-6 text-ink"
         >
           {error}
+        </p>
+      ) : null}
+      {notice ? (
+        <p
+          role="status"
+          className="mt-4 rounded-[20px] border border-ink bg-green-wash px-4 py-3 text-base leading-6 text-ink"
+        >
+          {notice}
         </p>
       ) : null}
 

@@ -2,16 +2,21 @@
   "name": "restaurent",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test tests/order-lifecycle.test.js tests/vapid.test.js tests/subscription.test.js tests/rate-limit.test.js tests/push-result.test.js tests/ids.test.js"
   },
   "dependencies": {
+    "mongoose": "^9.11.2",
     "next": "16.4.2",
+    "qrcode": "^1.5.4",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

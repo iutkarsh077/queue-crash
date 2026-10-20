@@ -1,0 +1,18 @@
+{
+  "name": "Queue",
+  "short_name": "Queue",
+  "description": "Wait for food. See your position and wait time.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1F8A4C",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

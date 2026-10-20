@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
+  },
   experimental: {
     agentFeedback: true,
   },
@@ -14,6 +22,23 @@ const nextConfig = {
         as: "*.css",
       },
     },
+  },
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
+    ];
   },
 };
 

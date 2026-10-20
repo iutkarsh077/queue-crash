@@ -3,8 +3,10 @@ import { describe, it } from "node:test";
 import {
   canMarkPickedUp,
   canMarkReady,
+  foodReadyNotificationOptions,
   foodReadyPayload,
   foodReadyText,
+  READY_VIBRATE_PATTERN,
   isOpenStatus,
   isPastExpiry,
   isSafeNotificationUrl,
@@ -41,6 +43,16 @@ describe("order lifecycle", () => {
     assert.equal(foodReadyText(12), "Your food is ready - token 12");
     const payload = foodReadyPayload(12, "a".repeat(32));
     assert.equal(payload.body, "Your food is ready - token 12");
+    assert.deepEqual(payload.vibrate, READY_VIBRATE_PATTERN);
+    assert.equal(payload.silent, false);
+    assert.equal(payload.renotify, true);
+    const options = foodReadyNotificationOptions({
+      body: payload.body,
+      url: payload.url,
+      tag: payload.tag,
+    });
+    assert.equal(options.silent, false);
+    assert.deepEqual(options.vibrate, READY_VIBRATE_PATTERN);
     assert.equal(isSafeNotificationUrl(payload.url), true);
     assert.equal(isSafeNotificationUrl("/o/not-valid"), false);
     assert.equal(isSafeNotificationUrl("https://evil.example/o/aaaa"), false);

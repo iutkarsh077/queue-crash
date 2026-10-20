@@ -8,7 +8,7 @@ export function ownerReadyPushMessage(push) {
   const removed = Number(push?.removed) || 0;
 
   if (sent > 0) {
-    return "Ready. Alert sent to the guest phone. Sound uses the phone notification channel, not media volume.";
+    return "Ready. Alert sent to the guest phone. Sound and vibrate use the phone notification channel, not media volume.";
   }
   if (failed > 0) {
     return "Ready. Phone alert failed. Check VAPID keys on Vercel and that the guest tapped Notify me.";

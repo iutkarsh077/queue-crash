@@ -1,6 +1,10 @@
-import { shouldPlayReadyWebAudio } from "./order-lifecycle.js";
+import {
+  foodReadyNotificationOptions,
+  READY_VIBRATE_PATTERN,
+  shouldPlayReadyWebAudio,
+} from "./order-lifecycle.js";
 
-export const READY_VIBRATE_PATTERN = [400, 150, 400, 150, 600];
+export { READY_VIBRATE_PATTERN };
 
 export function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -120,17 +124,20 @@ export async function showPageNotification({
   }
 
   const registration = await navigator.serviceWorker.ready;
-  await registration.showNotification(title || "Queue", {
-    body,
-    data: { url },
-    tag,
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
-    vibrate: READY_VIBRATE_PATTERN,
-    silent: false,
-    renotify: true,
-    requireInteraction,
-  });
+  try {
+    const existing = await registration.getNotifications();
+    for (const note of existing) {
+      if (!tag || note.tag === tag || note.tag === "food-ready") {
+        note.close();
+      }
+    }
+  } catch {
+    // getNotifications is optional.
+  }
+  await registration.showNotification(
+    title || "Queue",
+    foodReadyNotificationOptions({ body, url, tag, requireInteraction }),
+  );
   return true;
 }
 
@@ -156,7 +163,7 @@ export async function notifyFoodReady({ tokenNumber, orderId, documentVisible })
 export async function showNotifyTestNotification(orderId) {
   return showPageNotification({
     title: "Queue",
-    body: "Alerts are on. You will hear this when food is ready.",
+    body: "Alerts are on. This uses sound and vibrate.",
     url: `/o/${orderId}`,
     tag: "notify-test",
     requireInteraction: false,

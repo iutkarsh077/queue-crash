@@ -24,7 +24,7 @@ The guest does not log in. The application does not store a name, email, or phon
 
 The page does not say that notifications are on until the server saves the subscription.
 
-After **Notify me**, the service worker shows a test system notification: **Alerts are on. You will hear this when food is ready.**
+After **Notify me**, the service worker shows a test system notification: **Alerts are on. This uses sound and vibrate.**
 
 If the guest does not hear that test, the Chrome or Queue notification channel is muted. The page tells the guest to open **Settings**, then **Apps**, then **Chrome** or **Queue**, then **Notifications**, and turn sound on.
 
@@ -80,7 +80,7 @@ The live order page also expires a stale order when it loads or polls. The job c
 
 The guest must tap **Notify me** once. That is the web permission for background alerts. A website cannot take Android “run in background” like a native app.
 
-After **Notify me**, Chrome can send a food-ready push notification while the app is closed. Sound and vibration follow the phone **notification** channel for Chrome or the installed app. Media volume can be high while that channel is silent.
+After **Notify me**, Chrome can send a food-ready push notification while the app is closed. Sound and vibration follow the phone **notification** channel for Chrome or the installed app. The page cannot set a custom vibrate pattern on Android 8 and later. If sound works but vibrate does not, turn vibration on for Chrome or Queue notifications.
 
 A website cannot take Android “run in background” like a native app. The page cannot play Web Audio after the guest swipes the app away.
 

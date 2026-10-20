@@ -26,6 +26,28 @@ export function foodReadyText(tokenNumber) {
   return `Your food is ready - token ${tokenNumber}`;
 }
 
+export const READY_VIBRATE_PATTERN = [300, 120, 300, 120, 300, 120, 600];
+
+export function foodReadyNotificationOptions({
+  body,
+  url,
+  tag,
+  requireInteraction = true,
+  vibrate = READY_VIBRATE_PATTERN,
+}) {
+  return {
+    body,
+    data: { url },
+    tag,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    vibrate,
+    silent: false,
+    renotify: true,
+    requireInteraction,
+  };
+}
+
 export function foodReadyPayload(tokenNumber, publicId) {
   return {
     title: "Queue",
@@ -33,7 +55,7 @@ export function foodReadyPayload(tokenNumber, publicId) {
     url: `/o/${publicId}`,
     tag: `order-${publicId}`,
     requireInteraction: true,
-    vibrate: [400, 150, 400, 150, 600],
+    vibrate: READY_VIBRATE_PATTERN,
     silent: false,
     renotify: true,
   };

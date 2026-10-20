@@ -124,16 +124,6 @@ export async function showPageNotification({
   }
 
   const registration = await navigator.serviceWorker.ready;
-  try {
-    const existing = await registration.getNotifications();
-    for (const note of existing) {
-      if (!tag || note.tag === tag || note.tag === "food-ready") {
-        note.close();
-      }
-    }
-  } catch {
-    // getNotifications is optional.
-  }
   await registration.showNotification(
     title || "Queue",
     foodReadyNotificationOptions({ body, url, tag, requireInteraction }),
@@ -163,7 +153,7 @@ export async function notifyFoodReady({ tokenNumber, orderId, documentVisible })
 export async function showNotifyTestNotification(orderId) {
   return showPageNotification({
     title: "Queue",
-    body: "Alerts are on. This uses sound and vibrate.",
+    body: "Alerts are on. You will hear this when food is ready.",
     url: `/o/${orderId}`,
     tag: "notify-test",
     requireInteraction: false,

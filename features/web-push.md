@@ -24,7 +24,7 @@ The guest does not log in. The application does not store a name, email, or phon
 
 The page does not say that notifications are on until the server saves the subscription.
 
-After **Notify me**, the service worker shows a test system notification: **Alerts are on. This uses sound and vibrate.**
+After **Notify me**, the service worker shows a test system notification: **Alerts are on. You will hear this when food is ready.**
 
 If the guest does not hear that test, the Chrome or Queue notification channel is muted. The page tells the guest to open **Settings**, then **Apps**, then **Chrome** or **Queue**, then **Notifications**, and turn sound on.
 

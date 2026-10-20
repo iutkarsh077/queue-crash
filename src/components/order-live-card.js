@@ -20,7 +20,7 @@ const FALLBACK_TEXT = "Keep this page open - it will show Ready and beep";
 const IPHONE_TEXT =
   "On iPhone, add this site to your Home Screen. Then open the app and tap Notify me.";
 const NOTIFY_OK_TEXT =
-  "Alerts are on. You should hear a test alert and feel a vibrate now. If sound works but the phone does not vibrate, open Settings, then Apps, then Chrome or Queue, then Notifications, and turn vibration on.";
+  "Alerts are on. You should hear a test alert now. If you do not, open Settings, then Apps, then Chrome or Queue, then Notifications, and turn sound on. We will use that same sound when food is ready.";
 const NOTIFY_SAVED_TEXT =
   "Alerts are on. We will use a phone notification when food is ready.";
 

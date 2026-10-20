@@ -26,7 +26,7 @@ export function foodReadyText(tokenNumber) {
   return `Your food is ready - token ${tokenNumber}`;
 }
 
-export const READY_VIBRATE_PATTERN = [300, 120, 300, 120, 300, 120, 600];
+export const READY_VIBRATE_PATTERN = [400, 150, 400, 150, 600];
 
 export function foodReadyNotificationOptions({
   body,

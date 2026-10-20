@@ -1,45 +1,19 @@
 importScripts("/queue-store.js");
 
-const READY_VIBRATE = [300, 120, 300, 120, 300, 120, 600];
+const READY_VIBRATE = [400, 150, 400, 150, 600];
 
 function isSafeUrl(url) {
   return typeof url === "string" && /^\/o\/[A-Za-z0-9_-]{32}$/.test(url);
 }
 
-function readVibrate(value) {
-  if (!Array.isArray(value) || value.length === 0) {
-    return READY_VIBRATE;
-  }
-  const pattern = value.filter(
-    (item) => Number.isFinite(item) && item >= 0 && item <= 10000,
-  );
-  return pattern.length > 0 ? pattern.slice(0, 99) : READY_VIBRATE;
-}
-
-async function showReadyNotification({ title, body, url, tag, vibrate }) {
-  const noteTag = tag || "food-ready";
-  try {
-    const existing = await self.registration.getNotifications();
-    for (const note of existing) {
-      if (
-        note.tag === noteTag ||
-        note.tag === "food-ready" ||
-        note.tag === "notify-test"
-      ) {
-        note.close();
-      }
-    }
-  } catch {
-    // getNotifications is optional.
-  }
-
+function showReadyNotification({ title, body, url, tag }) {
   return self.registration.showNotification(title || "Queue", {
     body: body || "Your food is ready.",
     data: { url: isSafeUrl(url) ? url : "/" },
-    tag: noteTag,
+    tag: tag || "food-ready",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    vibrate: readVibrate(vibrate),
+    vibrate: READY_VIBRATE,
     silent: false,
     renotify: true,
     requireInteraction: true,
@@ -75,7 +49,6 @@ self.addEventListener("push", (event) => {
       body: typeof data.body === "string" ? data.body : "Your food is ready.",
       url: data.url,
       tag: typeof data.tag === "string" ? data.tag : "food-ready",
-      vibrate: data.vibrate,
     }),
   );
 });

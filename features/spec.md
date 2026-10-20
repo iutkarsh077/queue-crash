@@ -221,11 +221,13 @@ This origin goes only into `orderUrl` and the QR code. Pages do not store it.
 | 2 | Subscribe route | MongoDB `PushSubscription` | one row per order and endpoint |
 | 3 | Owner | `PATCH /api/orders/{mongoId}` | `{ status: "Ready" }` |
 | 4 | API | MongoDB `Order` | `Ready` and `readyAt` |
-| 5 | API | web-push | payload for that order only |
+| 5 | API | web-push | payload for that order only, urgency high, TTL 3 hours |
 | 6 | Service worker | Guest device | `Your food is ready - token N` |
 | 7 | Guest page | `GET /api/o/{publicId}/status` | token, status, label every 5 seconds |
 
 A second Ready request does not send push. HTTP 404 or 410 from the push service deletes that subscription.
+
+After **Notify me**, the guest page shows a test system notification. The guest page does not play the in-page beep when it opens on an order that is already Ready.
 
 ## 10. What does not flow yet
 

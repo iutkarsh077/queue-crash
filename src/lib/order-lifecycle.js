@@ -47,6 +47,26 @@ export function shouldSendReadyPush(previousStatus) {
   return previousStatus === ORDER_STATUS.PREPARING;
 }
 
+export function shouldAlertReadyTransition(previousStatus, nextStatus, alreadyAlerted) {
+  if (alreadyAlerted) {
+    return false;
+  }
+  return (
+    previousStatus === ORDER_STATUS.PREPARING && nextStatus === ORDER_STATUS.READY
+  );
+}
+
+export function shouldPlayReadyWebAudio(documentVisible, systemNotificationShown) {
+  return Boolean(documentVisible) && !systemNotificationShown;
+}
+
+export const READY_PUSH_TTL_SECONDS = Math.floor(ORDER_MAX_AGE_MS / 1000);
+
+export const READY_PUSH_OPTIONS = {
+  urgency: "high",
+  TTL: READY_PUSH_TTL_SECONDS,
+};
+
 export function publicOrderView(order) {
   return {
     tokenNumber: order.tokenNumber,

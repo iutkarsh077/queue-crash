@@ -24,6 +24,12 @@ The guest does not log in. The application does not store a name, email, or phon
 
 The page does not say that notifications are on until the server saves the subscription.
 
+After **Notify me**, the service worker shows a test system notification: **Alerts are on. You will hear this when food is ready.**
+
+If the guest does not hear that test, the Chrome or Queue notification channel is muted. The page tells the guest to open **Settings**, then **Apps**, then **Chrome** or **Queue**, then **Notifications**, and turn sound on.
+
+The page does not play the in-page beep for that test.
+
 ## Live status fallback
 
 The page reads `GET /api/o/[orderId]/status` every 5 seconds.
@@ -32,7 +38,9 @@ If push is not available, or the guest denies permission, the page shows:
 
 **Keep this page open - it will show Ready and beep**
 
-When status becomes **Ready**, the page plays a short sound and uses vibration when the browser allows it.
+When status changes from **Preparing** to **Ready** on an open page, the page asks the service worker to show the same system notification as a closed-app push. The page plays the in-page beep only if that system notification cannot show and the page is visible.
+
+The page does not play the in-page beep when the guest opens an order that is already **Ready**. Closed-app sound comes from the phone notification, not from Web Audio.
 
 On iPhone, web push works only after the guest adds the site to the Home Screen and opens that app. The page says:
 
@@ -70,14 +78,13 @@ The live order page also expires a stale order when it loads or polls. The job c
 
 The guest must tap **Notify me** once. That is the web permission for background alerts. A website cannot take Android “run in background” like a native app.
 
-After **Notify me**, Chrome can:
+After **Notify me**, Chrome can send a food-ready push notification while the app is closed. Sound and vibration follow the phone **notification** channel for Chrome or the installed app. Media volume can be high while that channel is silent.
 
-- Send a food-ready push notification while the app is closed (sound and vibrate from the phone notification channel)
-- Run a periodic background check on an installed PWA when Chrome allows it
+A website cannot take Android “run in background” like a native app. The page cannot play Web Audio after the guest swipes the app away.
 
-Keep phone alerts on. Do not use silent mode or Do Not Disturb.
+Keep notification sound on for Chrome or Queue. Do not use Do Not Disturb for that channel.
 
-Chrome blocks `navigator.vibrate` until the guest taps the page. The first tap after Ready will vibrate if the beep already played.
+The server sends Ready push with high urgency and a TTL of three hours.
 
 The PWA starts at `/`. The last scanned order id is stored in `localStorage` as `queue.lastOrderId`. Opening the installed app sends the guest back to that order.
 

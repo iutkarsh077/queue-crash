@@ -2,7 +2,7 @@ import webPushPackage from "web-push";
 
 const webpush = webPushPackage.default ?? webPushPackage;
 import PushSubscription from "@/models/PushSubscription";
-import { foodReadyPayload } from "@/lib/order-lifecycle";
+import { foodReadyPayload, READY_PUSH_OPTIONS } from "@/lib/order-lifecycle";
 import { shouldDeleteSubscription } from "@/lib/push-result";
 import { getVapidConfig } from "@/lib/vapid";
 
@@ -32,6 +32,7 @@ export async function sendReadyPush(order) {
           },
         },
         payload,
+        READY_PUSH_OPTIONS,
       );
       sent += 1;
     } catch (error) {

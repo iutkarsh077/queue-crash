@@ -1,7 +1,14 @@
 import { registerBackgroundAlerts } from "@/lib/background-alerts";
-import { urlBase64ToUint8Array } from "@/lib/push-client";
+import {
+  showNotifyTestNotification,
+  urlBase64ToUint8Array,
+} from "@/lib/push-client";
 
-export async function savePushSubscription(orderId, vapidPublicKey) {
+export async function savePushSubscription(
+  orderId,
+  vapidPublicKey,
+  { testNotification = false } = {},
+) {
   const registration = await navigator.serviceWorker.register("/sw.js", {
     scope: "/",
   });
@@ -25,5 +32,12 @@ export async function savePushSubscription(orderId, vapidPublicKey) {
     throw new Error(data.error || "Subscription failed. Try again.");
   }
   await registerBackgroundAlerts();
+  if (testNotification) {
+    try {
+      await showNotifyTestNotification(orderId);
+    } catch {
+      // The OS channel may be muted. Copy on the page explains this.
+    }
+  }
   return true;
 }

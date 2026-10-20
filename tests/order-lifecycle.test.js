@@ -9,6 +9,10 @@ import {
   isPastExpiry,
   isSafeNotificationUrl,
   publicOrderView,
+  READY_PUSH_OPTIONS,
+  READY_PUSH_TTL_SECONDS,
+  shouldAlertReadyTransition,
+  shouldPlayReadyWebAudio,
   shouldSendReadyPush,
 } from "../src/lib/order-lifecycle.js";
 
@@ -47,6 +51,28 @@ describe("order lifecycle", () => {
     assert.equal(shouldSendReadyPush("Ready"), false);
     assert.equal(isOpenStatus("Ready"), true);
     assert.equal(isOpenStatus("Picked up"), false);
+  });
+
+  it("does not alert when the order is already Ready on first render", () => {
+    assert.equal(shouldAlertReadyTransition("Ready", "Ready", false), false);
+    assert.equal(shouldAlertReadyTransition(undefined, "Ready", false), false);
+    assert.equal(shouldPlayReadyWebAudio(true, true), false);
+  });
+
+  it("alerts only on a live Preparing to Ready change", () => {
+    assert.equal(shouldAlertReadyTransition("Preparing", "Ready", false), true);
+    assert.equal(shouldAlertReadyTransition("Preparing", "Ready", true), false);
+    assert.equal(shouldAlertReadyTransition("Preparing", "Preparing", false), false);
+    assert.equal(shouldPlayReadyWebAudio(true, false), true);
+    assert.equal(shouldPlayReadyWebAudio(false, false), false);
+  });
+
+  it("sends Ready push with high urgency and a few-hour TTL", () => {
+    assert.equal(READY_PUSH_TTL_SECONDS, 3 * 60 * 60);
+    assert.deepEqual(READY_PUSH_OPTIONS, {
+      urgency: "high",
+      TTL: READY_PUSH_TTL_SECONDS,
+    });
   });
 
   it("hides owner fields from the public view", () => {

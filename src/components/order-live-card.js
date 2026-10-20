@@ -4,13 +4,14 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PrimaryButton } from "@/components/guest-shell";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { syncLastOrderId } from "@/lib/last-order";
+import { shouldAlertReadyTransition } from "@/lib/order-lifecycle";
 import { ORDER_STATUS } from "@/lib/order-status-copy";
 import { savePushSubscription } from "@/lib/push-subscribe";
 import {
   armVibrateOnUserTap,
   isIosDevice,
   isStandaloneDisplay,
-  playReadyAlert,
+  notifyFoodReady,
   playReadyVibrate,
   supportsWebPush,
 } from "@/lib/push-client";
@@ -19,7 +20,9 @@ const FALLBACK_TEXT = "Keep this page open - it will show Ready and beep";
 const IPHONE_TEXT =
   "On iPhone, add this site to your Home Screen. Then open the app and tap Notify me.";
 const NOTIFY_OK_TEXT =
-  "Alerts are on. We will sound and vibrate when food is ready, even if you leave this app.";
+  "Alerts are on. You should hear a test alert now. If you do not, open Settings, then Apps, then Chrome or Queue, then Notifications, and turn sound on. We will use that same sound when food is ready.";
+const NOTIFY_SAVED_TEXT =
+  "Alerts are on. We will use a phone notification when food is ready.";
 
 const SERVER_PUSH_ENV = {
   pushReady: false,
@@ -56,6 +59,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
   const [notifySaved, setNotifySaved] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const alertedReady = useRef(false);
+  const previousStatus = useRef(initial.status);
   const pushEnv = useSyncExternalStore(
     subscribePushEnv,
     readClientPushEnv,
@@ -73,12 +77,22 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
   }, [orderId, order.status]);
 
   useEffect(() => {
-    if (order.status !== ORDER_STATUS.READY || alertedReady.current) {
+    const fromStatus = previousStatus.current;
+    previousStatus.current = order.status;
+    if (
+      !shouldAlertReadyTransition(fromStatus, order.status, alertedReady.current)
+    ) {
       return;
     }
     alertedReady.current = true;
-    playReadyAlert();
-  }, [order.status]);
+    const documentVisible =
+      typeof document === "undefined" || document.visibilityState === "visible";
+    notifyFoodReady({
+      tokenNumber: order.tokenNumber,
+      orderId,
+      documentVisible,
+    });
+  }, [order.status, order.tokenNumber, orderId]);
 
   useEffect(() => {
     if (!pushReady || iosNeedsHomeScreen || !vapidPublicKey) {
@@ -96,7 +110,7 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
       .then(() => {
         if (!cancelled) {
           setNotifySaved(true);
-          setMessage(NOTIFY_OK_TEXT);
+          setMessage(NOTIFY_SAVED_TEXT);
         }
       })
       .catch(() => {
@@ -170,7 +184,9 @@ export function OrderLiveCard({ orderId, initial, vapidPublicKey }) {
         return;
       }
 
-      await savePushSubscription(orderId, vapidPublicKey);
+      await savePushSubscription(orderId, vapidPublicKey, {
+        testNotification: true,
+      });
       playReadyVibrate();
       setNotifySaved(true);
       setMessage(NOTIFY_OK_TEXT);

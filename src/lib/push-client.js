@@ -1,3 +1,5 @@
+import { shouldPlayReadyWebAudio } from "./order-lifecycle.js";
+
 export const READY_VIBRATE_PATTERN = [400, 150, 400, 150, 600];
 
 export function urlBase64ToUint8Array(base64String) {
@@ -101,4 +103,62 @@ export function playReadyAlert() {
   } catch {
     // Sound is optional.
   }
+}
+
+export async function showPageNotification({
+  title,
+  body,
+  url,
+  tag,
+  requireInteraction = true,
+}) {
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+    return false;
+  }
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return false;
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  await registration.showNotification(title || "Queue", {
+    body,
+    data: { url },
+    tag,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    vibrate: READY_VIBRATE_PATTERN,
+    silent: false,
+    renotify: true,
+    requireInteraction,
+  });
+  return true;
+}
+
+export async function notifyFoodReady({ tokenNumber, orderId, documentVisible }) {
+  let shown = false;
+  try {
+    shown = await showPageNotification({
+      title: "Queue",
+      body: `Your food is ready - token ${tokenNumber}`,
+      url: `/o/${orderId}`,
+      tag: `order-${orderId}`,
+    });
+  } catch {
+    shown = false;
+  }
+
+  if (shouldPlayReadyWebAudio(documentVisible, shown)) {
+    playReadyAlert();
+  }
+  return shown;
+}
+
+export async function showNotifyTestNotification(orderId) {
+  return showPageNotification({
+    title: "Queue",
+    body: "Alerts are on. You will hear this when food is ready.",
+    url: `/o/${orderId}`,
+    tag: "notify-test",
+    requireInteraction: false,
+  });
 }

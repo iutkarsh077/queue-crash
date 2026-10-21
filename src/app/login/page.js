@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { navigation } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
-import { GuestShell, PrimaryLink } from "@/components/guest-shell";
+import { GuestShell, NavTextLink, PrimaryLink } from "@/components/guest-shell";
 
 export const metadata = {
   title: "Log in",
@@ -31,6 +31,7 @@ async function LoginContent({ searchParams }) {
     return (
       <GuestShell
         title="Queue"
+        navAction={<NavTextLink href="/how">How</NavTextLink>}
         footer={<PrimaryLink href="/dashboard">Open the dashboard</PrimaryLink>}
       >
         <main>
@@ -51,6 +52,7 @@ async function LoginContent({ searchParams }) {
   return (
     <GuestShell
       title="Queue"
+      navAction={<NavTextLink href="/how">How It Works?</NavTextLink>}
       footer={<PrimaryLink href="/api/auth/google">Log in with Google</PrimaryLink>}
     >
       <main>

@@ -1,10 +1,13 @@
-export function GuestShell({ title, children, footer }) {
+export function GuestShell({ title, children, footer, navAction }) {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-white">
       <header className="border-b border-ink bg-white">
         <div className="mx-auto flex h-14 max-w-md items-center gap-2 px-6 md:max-w-2xl">
           <span className="h-2.5 w-2.5 rounded-full bg-green" aria-hidden="true" />
           <p className="text-base font-semibold tracking-tight text-ink">{title}</p>
+          {navAction ? (
+            <div className="ml-auto flex items-center">{navAction}</div>
+          ) : null}
         </div>
       </header>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-6 md:max-w-2xl">
@@ -61,6 +64,17 @@ export function SecondaryLink({ href, children }) {
     <a
       href={href}
       className="flex h-12 w-full items-center justify-center rounded-[14px] border border-ink bg-white text-base font-medium text-ink transition-colors duration-200 ease-out hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+    >
+      {children}
+    </a>
+  );
+}
+
+export function NavTextLink({ href, children }) {
+  return (
+    <a
+      href={href}
+      className="inline-flex h-9 min-w-11 items-center justify-center rounded-[10px] px-2.5 text-sm font-medium text-ink transition-colors duration-200 ease-out hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
     >
       {children}
     </a>

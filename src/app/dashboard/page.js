@@ -1,7 +1,12 @@
 import { Suspense } from "react";
 import { navigation } from "next/cache";
 import { connection } from "next/server";
-import { GuestShell, PrimaryLink, SecondaryLink } from "@/components/guest-shell";
+import {
+  GuestShell,
+  NavTextLink,
+  PrimaryLink,
+  SecondaryLink,
+} from "@/components/guest-shell";
 import { OwnerWorkspace } from "@/components/owner-workspace";
 import { getSessionUser } from "@/lib/auth";
 import { connectDb } from "@/lib/db";
@@ -71,6 +76,7 @@ async function DashboardContent() {
   return (
     <GuestShell
       title="Queue"
+      navAction={<NavTextLink href="/how">How It Works?</NavTextLink>}
       footer={<SecondaryLink href="/api/auth/logout">Log out</SecondaryLink>}
     >
       <main>
